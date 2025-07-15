@@ -1,6 +1,16 @@
 ### Add Custom Text To Workspace Indicators Extension (GNOME V45 and above)
 
-___
+### Install
+```
+git clone https://github.com/pratap-panabaka/gse-add-custom-text-to-workspace-indicators
+cd gse-add-custom-text-to-workspace-indicators
+./install.sh
+```
+
+### Uninstall
+```
+./uninstall.sh
+```
 
 <hr/>
 
