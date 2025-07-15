@@ -7,7 +7,6 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as config from 'resource:///org/gnome/shell/misc/config.js';
 import {Extension, InjectionManager} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-let iconObj = null;
 let labelObj = null;
 let connectionSettingsArray = null;
 
@@ -15,12 +14,7 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
     enable() {
         this._injectionManager = new InjectionManager();
 
-        iconObj = {
-            y_align: Clutter.ActorAlign.CENTER,
-            icon_name: 'brand-logo-symbolic',
-            fallback_icon_name: 'image-missing-symbolic',
-            icon_size: Main.panel.height,
-        };
+        this._customLogo = new St.Icon();
 
         labelObj = {
             text: '',
@@ -30,9 +24,14 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._settings = this.getSettings();
         this._workspaces_settings = new Gio.Settings({schema: 'org.gnome.desktop.wm.preferences'});
 
-        this._workSpaceIndicators = Main.panel.statusArea.activities.get_first_child();
+        this._activities = Main.panel.statusArea.activities;
+        this._activities.add_style_class_name('remove-natural-hpadding');
 
-        this._customLogo = new St.Icon(iconObj);
+        this._workSpaceIndicators = this._activities.get_children().filter(child => child.constructor?.name === 'WorkspaceIndicators')[0] || null;
+
+        this._customLogo.gicon = Gio.icon_new_for_string(this._settings.get_string('logo-path'));
+        this._customLogo.set_icon_size(Main.panel.height);
+
         this._workSpaceIndicators.add_child(this._customLogo);
 
         this._customLabel = new St.Label(labelObj);
@@ -88,13 +87,12 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
 
         // on color change
         this._onPillsColorChange();
-        this._onLogoColorChange();
+        this._onLogoChange();
         this._onLabelColorChange();
         this._onIndicatorColorChange();
     }
 
     disable() {
-        iconObj = null;
         labelObj = null;
 
         this._removeChildren();
@@ -113,6 +111,8 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
 
         this._workspaces_settings = null;
         this._settings = null;
+
+        this._activities.remove_style_class_name('remove-natural-hpadding');
 
         this._injectionManager.clear(); // clear override method
         this._injectionManager = null;
@@ -172,8 +172,8 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._onPillsColorChangedId = this._settings.connect('changed::pills-color', this._onPillsColorChange.bind(this)); // async
         connectionSettingsArray.push(this._onPillsColorChangedId);
 
-        this._onLogoColorChangedId = this._settings.connect('changed::logo-color', this._onLogoColorChange.bind(this));
-        connectionSettingsArray.push(this._onLogoColorChangedId);
+        this._onLogoChangedId = this._settings.connect('changed::logo-path', this._onLogoChange.bind(this));
+        connectionSettingsArray.push(this._onLogoChangedId);
 
         this._onLabelColorChangedId = this._settings.connect('changed::label-color', this._onLabelColorChange.bind(this));
         connectionSettingsArray.push(this._onLabelColorChangedId);
@@ -264,9 +264,9 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._customIndicator.text = workspaceNames[index] ? `${workspaceNames[index]}` : `ws${index + 1} / ${nWorkspaces}`;
     }
 
-    _onLogoColorChange() {
-        let logoColor = this._settings.get_string('logo-color');
-        this._customLogo.set_style(`color: ${logoColor}`);
+    _onLogoChange() {
+        let logoPath = this._settings.get_string('logo-path');
+        this._customLogo.gicon = Gio.icon_new_for_string(logoPath);
     }
 
     _onLabelColorChange() {
