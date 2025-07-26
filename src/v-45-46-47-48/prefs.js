@@ -10,7 +10,7 @@ import PickImage from './prefs/pickImage.js';
 export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         window._settings = this.getSettings();
-        window.set_default_size(800, 600);
+        window.set_default_size(800, 1000);
 
         window._pillsColorButton = new Gtk.ColorButton();
         window._labelColorButton = new Gtk.ColorButton();

@@ -24,15 +24,23 @@ class PickImage {
         return this._entryRow;
     }
 
+    // addButton() {
+    //     this._fileChooseButton = new Adw.ButtonRow({title: 'Browse Image File'});
+    //     this._fileChooseButton.connect('activated', this.showFileChooserDialog.bind(this));
+
+    //     return this._fileChooseButton;
+    // }
+
     addButton() {
-        this._fileChooseButton = new Adw.ButtonRow({title: 'Browse Image File'});
-        this._fileChooseButton.connect('activated', this.showFileChooserDialog.bind(this));
+        this._fileChooseButton = new Gtk.Button({ label: 'Browse Folder' });
+        this._fileChooseButton.set_has_frame(true);
+        this._fileChooseButton.connect('clicked', this.showFileChooserDialog.bind(this));
 
         return this._fileChooseButton;
     }
 
     showFileChooserDialog() {
-        this._fileChooser = new Gtk.FileDialog({title: 'Select Image File'});
+        this._fileChooser = new Gtk.FileDialog({ title: 'Select Image File' });
         this._fileChooser.open(null, null, (dialog, result) => {
             this.onSelectFolderFinish(dialog, result);
         }, null);
