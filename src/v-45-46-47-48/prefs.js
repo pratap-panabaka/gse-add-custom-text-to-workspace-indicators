@@ -55,7 +55,6 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences exte
 
         const folderThing = new PickImage(window._settings);
         logoGroup.add(folderThing.addPictureUrl());
-        logoGroup.add(folderThing.addButton());
 
         page.add(logoGroup);
         //
