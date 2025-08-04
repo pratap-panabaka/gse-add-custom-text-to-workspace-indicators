@@ -27,7 +27,7 @@ class PickImage {
     }
 
     addButton() {
-        this._fileChooseButton = new Gtk.Button({ label: 'Browse Image' });
+        this._fileChooseButton = new Gtk.Button({label: 'Browse Image'});
         this._fileChooseButton.set_has_frame(true);
         this._fileChooseButton.connect('clicked', this.showFileChooserDialog.bind(this));
 
@@ -35,7 +35,7 @@ class PickImage {
     }
 
     showFileChooserDialog() {
-        this._fileChooser = new Gtk.FileDialog({ title: 'Select Image File' });
+        this._fileChooser = new Gtk.FileDialog({title: 'Select Image File'});
         this._fileChooser.open(null, null, (dialog, result) => {
             this.onSelectFolderFinish(dialog, result);
         }, null);

@@ -5,7 +5,7 @@ import Clutter from 'gi://Clutter';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as config from 'resource:///org/gnome/shell/misc/config.js';
-import { Extension, InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
+import {Extension, InjectionManager} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 let labelObj = null;
 let connectionSettingsArray = null;
@@ -22,12 +22,12 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         };
 
         this._settings = this.getSettings();
-        this._workspaces_settings = new Gio.Settings({ schema: 'org.gnome.desktop.wm.preferences' });
+        this._workspaces_settings = new Gio.Settings({schema: 'org.gnome.desktop.wm.preferences'});
 
         this._activities = Main.panel.statusArea.activities;
         this._activities.add_style_class_name('remove-natural-hpadding');
 
-        this._workSpaceIndicators = this._activities.get_children().find(child => child.constructor?.name === 'WorkspaceIndicators') || null;
+        this._workSpaceIndicators = this._activities.get_children().filter(child => child.constructor?.name === 'WorkspaceIndicators')[0] || null;
 
         this._customLogo.gicon = Gio.icon_new_for_string(this._settings.get_string('logo-path'));
         this._customLogo.set_icon_size(Main.panel.height);
@@ -216,30 +216,30 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
 
         let customText = this._settings.get_string('custom-text');
         switch (customText) {
-            case '':
-                this._customLabel.text = `${GLib.get_os_info('PRETTY_NAME')} | ${config.PACKAGE_NAME.toUpperCase()} ${config.PACKAGE_VERSION}`;
-                break;
-            case 'username':
-                this._customLabel.text = GLib.get_user_name();
-                break;
-            case 'realname':
-                this._customLabel.text = GLib.get_real_name();
-                break;
-            case 'hostname':
-                this._customLabel.text = GLib.get_host_name();
-                break;
-            case 'osname':
-                this._customLabel.text = GLib.get_os_info('PRETTY_NAME');
-                break;
-            case 'kernel': {
-                const unit8array = GLib.spawn_command_line_sync('uname -r')[1];
-                const kernelVersion = new TextDecoder().decode(unit8array).trim();
-                const kernelText = `Kernel Version ${kernelVersion}`;
-                this._customLabel.text = kernelText;
-                break;
-            }
-            default:
-                this._customLabel.text = customText;
+        case '':
+            this._customLabel.text = `${GLib.get_os_info('PRETTY_NAME')} | ${config.PACKAGE_NAME.toUpperCase()} ${config.PACKAGE_VERSION}`;
+            break;
+        case 'username':
+            this._customLabel.text = GLib.get_user_name();
+            break;
+        case 'realname':
+            this._customLabel.text = GLib.get_real_name();
+            break;
+        case 'hostname':
+            this._customLabel.text = GLib.get_host_name();
+            break;
+        case 'osname':
+            this._customLabel.text = GLib.get_os_info('PRETTY_NAME');
+            break;
+        case 'kernel': {
+            const unit8array = GLib.spawn_command_line_sync('uname -r')[1];
+            const kernelVersion = new TextDecoder().decode(unit8array).trim();
+            const kernelText = `Kernel Version ${kernelVersion}`;
+            this._customLabel.text = kernelText;
+            break;
+        }
+        default:
+            this._customLabel.text = customText;
         }
     }
 
