@@ -1,3 +1,8 @@
 .remove-natural-hpadding {
     -natural-hpadding: 0;
 }
+
+#panel .panel-button#panelActivities StBoxLayout {
+    padding: 0 12px 0 0;
+    spacing: 5px;
+}
