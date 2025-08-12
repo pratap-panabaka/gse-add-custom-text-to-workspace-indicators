@@ -5,16 +5,14 @@ class PickImage {
     constructor(settings) {
         this._gsettings = settings;
         this._entryRow = null;
-        this._fileChooseButton = null;
+        this._imageChooseButton = null;
         this._fileChooser = null;
     }
 
     addPictureUrl() {
         this._entryRow = new Adw.EntryRow({
             title: 'Please use square sized image',
-            'enable-emoji-completion': true,
         });
-
 
         this._entryRow.set_text(this._gsettings.get_string('logo-path'));
         this._entryRow.connect('changed', entry => {
@@ -27,21 +25,21 @@ class PickImage {
     }
 
     addButton() {
-        this._fileChooseButton = new Gtk.Button({label: 'Browse Image'});
-        this._fileChooseButton.set_has_frame(true);
-        this._fileChooseButton.connect('clicked', this.showFileChooserDialog.bind(this));
+        this._imageChooseButton = new Gtk.Button({label: 'Browse Image'});
+        this._imageChooseButton.set_has_frame(true);
+        this._imageChooseButton.connect('clicked', this.showFileChooserDialog.bind(this));
 
-        return this._fileChooseButton;
+        return this._imageChooseButton;
     }
 
     showFileChooserDialog() {
         this._fileChooser = new Gtk.FileDialog({title: 'Select Image File'});
         this._fileChooser.open(null, null, (dialog, result) => {
-            this.onSelectFolderFinish(dialog, result);
+            this.onSelectFileFinish(dialog, result);
         }, null);
     }
 
-    onSelectFolderFinish(dialog, result) {
+    onSelectFileFinish(dialog, result) {
         try {
             const file = dialog.open_finish(result);
             if (file)

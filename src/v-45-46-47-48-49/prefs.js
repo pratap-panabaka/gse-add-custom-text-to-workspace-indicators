@@ -2,27 +2,24 @@ import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
 
-import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import {setButtonColor, colorButton, createGtkButton} from './prefs/helperFunctions.js';
-import PickImage from './prefs/pickImage.js';
+import PickImage from './preferences/pickImage.js';
+import generateColorButton from './preferences/generateColorButton.js';
+import generateResetColorButton from './preferences/generateResetColorButton.js';
+import generateGtkButton from './preferences/generateGtkButton.js';
 
 export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         window._settings = this.getSettings();
         window.set_default_size(800, 1000);
 
-        window._pillsColorButton = new Gtk.ColorButton();
-        window._labelColorButton = new Gtk.ColorButton();
-        window._indicatorColorButton = new Gtk.ColorButton();
-
-        setButtonColor(window._pillsColorButton, 'pills-color', window._settings);
-        setButtonColor(window._labelColorButton, 'label-color', window._settings);
-        setButtonColor(window._indicatorColorButton, 'indicator-color', window._settings);
-
         const page = new Adw.PreferencesPage();
 
         window.add(page);
+
+        let button;
+        let reset;
 
         // system indicators
         const systemIndicatorsGroup = new Adw.PreferencesGroup({
@@ -38,7 +35,11 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences exte
         const systemIndicatorColorRow = new Adw.ActionRow({
             title: 'Pills Color',
         });
-        systemIndicatorsGroup.add(colorButton('Reset', window._pillsColorButton, 'pills-color', window._settings, systemIndicatorColorRow));
+        button = generateColorButton(window._settings, 'pills-color');
+        reset = generateResetColorButton(window._settings, button, 'pills-color');
+        systemIndicatorColorRow.add_suffix(button);
+        systemIndicatorColorRow.add_suffix(reset);
+        systemIndicatorsGroup.add(systemIndicatorColorRow);
         //
 
         // Logo
@@ -70,10 +71,14 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences exte
         });
         customTextGroup.add(showCustomTextRow);
 
-        const customTextColor = new Adw.ActionRow({
+        const customTextColorRow = new Adw.ActionRow({
             title: 'Custom Text Color',
         });
-        customTextGroup.add(colorButton('Reset', window._labelColorButton, 'label-color', window._settings, customTextColor));
+        button = generateColorButton(window._settings, 'label-color');
+        reset = generateResetColorButton(window._settings, button, 'label-color');
+        customTextColorRow.add_suffix(button);
+        customTextColorRow.add_suffix(reset);
+        customTextGroup.add(customTextColorRow);
 
         const entryRow = new Adw.EntryRow({
             title: 'Enter your text or leave it blank for extensions default text',
@@ -83,8 +88,8 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences exte
         entryRow.connect('changed', entry => {
             window._settings.set_string('custom-text', entry.get_text());
         });
-        entryRow.add_prefix(new Gtk.Label({label: 'Custom Text'}));
-        entryRow.add_suffix(createGtkButton('Clear Text', 'custom-text', '', window._settings, entryRow));
+        entryRow.add_prefix(new Gtk.Label({ label: 'Custom Text' }));
+        entryRow.add_suffix(generateGtkButton('Clear Text', 'custom-text', '', window._settings, entryRow));
         customTextGroup.add(entryRow);
 
         const customTextsPredefinedTitleRow = new Adw.ActionRow({
@@ -93,11 +98,11 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences exte
         customTextGroup.add(customTextsPredefinedTitleRow);
 
         const customTextsPredefinedRow = new Adw.ActionRow();
-        customTextsPredefinedRow.add_suffix(createGtkButton('User Name', 'custom-text', 'username', window._settings, entryRow));
-        customTextsPredefinedRow.add_suffix(createGtkButton('Real Name', 'custom-text', 'realname', window._settings, entryRow));
-        customTextsPredefinedRow.add_suffix(createGtkButton('Host Name', 'custom-text', 'hostname', window._settings, entryRow));
-        customTextsPredefinedRow.add_suffix(createGtkButton('OS Name', 'custom-text', 'osname', window._settings, entryRow));
-        customTextsPredefinedRow.add_suffix(createGtkButton('Kernel Version', 'custom-text', 'kernel', window._settings, entryRow));
+        customTextsPredefinedRow.add_suffix(generateGtkButton('User Name', 'custom-text', 'username', window._settings, entryRow));
+        customTextsPredefinedRow.add_suffix(generateGtkButton('Real Name', 'custom-text', 'realname', window._settings, entryRow));
+        customTextsPredefinedRow.add_suffix(generateGtkButton('Host Name', 'custom-text', 'hostname', window._settings, entryRow));
+        customTextsPredefinedRow.add_suffix(generateGtkButton('OS Name', 'custom-text', 'osname', window._settings, entryRow));
+        customTextsPredefinedRow.add_suffix(generateGtkButton('Kernel Version', 'custom-text', 'kernel', window._settings, entryRow));
         customTextGroup.add(customTextsPredefinedRow);
         //
 
@@ -110,11 +115,16 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences exte
         const showCustomIndicatorsRow = new Adw.SwitchRow({
             title: 'Show Custom Indicator',
         });
+
         customIndicatorsGroup.add(showCustomIndicatorsRow);
         const customIndicatorColorRow = new Adw.ActionRow({
             title: 'Custom Indicator Color',
         });
-        customIndicatorsGroup.add(colorButton('Reset', window._indicatorColorButton, 'indicator-color', window._settings, customIndicatorColorRow));
+        button = generateColorButton(window._settings, 'indicator-color');
+        reset = generateResetColorButton(window._settings, button, 'indicator-color');
+        customIndicatorColorRow.add_suffix(button);
+        customIndicatorColorRow.add_suffix(reset);
+        customIndicatorsGroup.add(customIndicatorColorRow);
         //
 
         window._settings.bind('hide-pills', workSpaceIndicatorsRow, 'active', Gio.SettingsBindFlags.DEFAULT);
