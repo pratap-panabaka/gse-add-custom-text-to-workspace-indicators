@@ -16,16 +16,16 @@ const generateColorButton = (settings, gsKey) => {
     button.connect('notify::rgba', () => onPanelColorChanged(settings, button, gsKey));
 
     return button;
-}
+};
 
 const onPanelColorChanged = (settings, button, gsKey) => {
     let rgba = button.rgba;
-    let { red, green, blue, alpha } = rgba;
-    if (red === 0 && green === 0 && blue === 0 && alpha === 0) {
+    let {red, green, blue, alpha} = rgba;
+    if (red === 0 && green === 0 && blue === 0 && alpha === 0)
         return;
-    }
+
     let css = `rgba(${Math.round(rgba.red * 255)}, ${Math.round(rgba.green * 255)}, ${Math.round(rgba.blue * 255)}, ${rgba.alpha})`;
     settings.set_string(gsKey, css);
-}
+};
 
 export default generateColorButton;

@@ -2,7 +2,6 @@ import Gdk from 'gi://Gdk';
 import Gtk from 'gi://Gtk';
 
 const generateResetColorButton = (settings, button, gsKey) => {
-
     let resetButton = new Gtk.Button({
         label: 'Reset',
     });
@@ -14,6 +13,6 @@ const generateResetColorButton = (settings, button, gsKey) => {
     });
 
     return resetButton;
-}
+};
 
 export default generateResetColorButton;

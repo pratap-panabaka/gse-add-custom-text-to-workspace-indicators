@@ -9,6 +9,6 @@ const generateGtkButton = (label, gsKey, predefinedString, settings, row) => {
     });
 
     return gtkButton;
-}
+};
 
 export default generateGtkButton;

@@ -2,7 +2,7 @@ import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
 
-import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import PickImage from './preferences/pickImage.js';
 import generateColorButton from './preferences/generateColorButton.js';
@@ -88,7 +88,7 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtensionPreferences exte
         entryRow.connect('changed', entry => {
             window._settings.set_string('custom-text', entry.get_text());
         });
-        entryRow.add_prefix(new Gtk.Label({ label: 'Custom Text' }));
+        entryRow.add_prefix(new Gtk.Label({label: 'Custom Text'}));
         entryRow.add_suffix(generateGtkButton('Clear Text', 'custom-text', '', window._settings, entryRow));
         customTextGroup.add(entryRow);
 
