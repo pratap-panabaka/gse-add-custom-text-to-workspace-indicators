@@ -25,7 +25,6 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._workspaces_settings = new Gio.Settings({schema: 'org.gnome.desktop.wm.preferences'});
 
         this._activities = Main.panel.statusArea.activities;
-        this._activities.add_style_class_name('remove-natural-hpadding');
 
         this._workSpaceIndicators = this._activities.get_children().filter(child => child.constructor?.name === 'WorkspaceIndicators')[0] || null;
 
@@ -55,7 +54,7 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
                     // add custom widgets back after calling original _relcalculateDots method
                     // then call respective methods for visibility (show or hide)
                     this._workSpaceIndicators.add_child(this._customLogo);
-                    this._setLogo();
+                    this._showLogo();
 
                     this._workSpaceIndicators.add_child(this._customLabel);
                     this._setLabel();
@@ -79,7 +78,7 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         );
         // finish overriding //
 
-        this._setLogo();
+        this._showLogo();
         this._setCustomLabel();
         this._setCustomIndicator();
         this._connectSettings();
@@ -157,7 +156,7 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._pillsVisibilityId = this._settings.connect('changed::hide-pills', this._pillsVisibilityChange.bind(this)); // async
         connectionSettingsArray.push(this._pillsVisibilityId);
 
-        this._showLogoId = this._settings.connect('changed::show-logo', this._setLogo.bind(this));
+        this._showLogoId = this._settings.connect('changed::show-logo', this._showLogo.bind(this));
         connectionSettingsArray.push(this._showLogoId);
 
         this._showCustomTextId = this._settings.connect('changed::show-custom-text', this._setLabel.bind(this));
@@ -187,16 +186,16 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._wSNumberChangedId = global.workspace_manager.connect('notify::n-workspaces', this._onWorkspaceChanged.bind(this));
     }
 
-    _setLogo() {
+    _showLogo() {
         const shouldShowLogo = this._settings.get_boolean('show-logo');
-        if (!shouldShowLogo) {
-            if (this._customLogo)
-                this._customLogo.hide();
-            return;
-        }
-
-        if (this._customLogo)
+        if (shouldShowLogo) {
             this._customLogo.show();
+            this._activities.add_style_class_name('natural-hpadding');
+            this._activities.get_children()[0].set_style('padding-left: 0px;');
+        } else {
+            this._customLogo.hide();
+            this._activities.remove_style_class_name('natural-hpadding');
+        }
     }
 
     _setLabel() {
