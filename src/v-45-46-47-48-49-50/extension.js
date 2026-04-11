@@ -5,7 +5,7 @@ import Clutter from 'gi://Clutter';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as config from 'resource:///org/gnome/shell/misc/config.js';
-import {Extension, InjectionManager} from 'resource:///org/gnome/shell/extensions/extension.js';
+import { Extension, InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 let labelObj = null;
 let connectionSettingsArray = null;
@@ -22,11 +22,13 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         };
 
         this._settings = this.getSettings();
-        this._workspaces_settings = new Gio.Settings({schema: 'org.gnome.desktop.wm.preferences'});
+        this._workspaces_settings = new Gio.Settings({ schema: 'org.gnome.desktop.wm.preferences' });
 
         this._activities = Main.panel.statusArea.activities;
 
-        this._workSpaceIndicators = this._activities.get_children().filter(child => child.constructor?.name === 'WorkspaceIndicators')[0] || null;
+        this._workSpaceIndicators = this._activities.get_children().filter(
+            child => child.constructor?.name === 'WorkspaceIndicators'
+        )[0] || null;
 
         this._customLogo.gicon = Gio.icon_new_for_string(this._settings.get_string('logo-path'));
         this._customLogo.set_icon_size(Main.panel.height);
@@ -39,20 +41,18 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._customIndicator = new St.Label(labelObj);
         this._workSpaceIndicators.add_child(this._customIndicator);
 
-        // override recalculateDots method
+        // ✅ Override recalculateDots
         this._injectionManager.overrideMethod(this._workSpaceIndicators, '_recalculateDots',
             originalMethod => {
                 return () => {
-                    this._removeChildren(); // remove custom widgets
+                    this._removeChildren();
 
-                    originalMethod.call(this._workSpaceIndicators); // call original _recalculateDots method
+                    originalMethod.call(this._workSpaceIndicators);
 
                     let pills = this._workSpaceIndicators.get_children();
-                    this._applyColor(pills); // apply color to newly added pill if workspace added based on gsettings
-                    this._applyVisibility(pills); // hide newly added pill if workspace added based on gsettings
+                    this._applyColor(pills);
+                    this._applyVisibility(pills);
 
-                    // add custom widgets back after calling original _relcalculateDots method
-                    // then call respective methods for visibility (show or hide)
                     this._workSpaceIndicators.add_child(this._customLogo);
                     this._showLogo();
 
@@ -65,26 +65,13 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
             }
         );
 
-        // override vfunc
-        this._injectionManager.overrideMethod(Main.panel.statusArea.activities, 'vfunc_event',
-            originalMethod => {
-                return event => {
-                    if (event.type() === Clutter.EventType.BUTTON_RELEASE && event.get_button() === 2)
-                        this.openPreferences();
-                    else
-                        originalMethod(event);
-                };
-            }
-        );
-        // finish overriding //
-
+        // Init
         this._showLogo();
         this._setCustomLabel();
         this._setCustomIndicator();
         this._connectSettings();
         this._pillsVisibilityChange();
 
-        // on color change
         this._onPillsColorChange();
         this._onLogoChange();
         this._onLabelColorChange();
@@ -98,8 +85,8 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
 
         let pills = this._workSpaceIndicators.get_children();
         pills.forEach(pill => {
-            pill.show(); // show pills
-            pill._dot.set_style(null); // remove custom color;
+            pill.show();
+            pill._dot.set_style(null);
         });
 
         this._destroyAllConnections();
@@ -113,7 +100,7 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
 
         this._activities.remove_style_class_name('remove-natural-hpadding');
 
-        this._injectionManager.clear(); // clear override method
+        this._injectionManager.clear();
         this._injectionManager = null;
     }
 
@@ -126,34 +113,32 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
     _applyColor(pills) {
         let pillsColor = this._settings.get_string('pills-color');
         pills.forEach(pill => {
-            pill._dot.set_style(`background-color: ${pillsColor}`);
+            if (pill._dot)
+                pill._dot.set_style(`background-color: ${pillsColor}`);
         });
     }
 
     _applyVisibility(pills) {
         let shouldHide = this._settings.get_boolean('hide-pills');
         pills.forEach(pill => {
-            if (shouldHide)
-                pill.hide();
-            else
-                pill.show();
+            shouldHide ? pill.hide() : pill.show();
         });
     }
 
     async _pillsVisibilityChange() {
-        const pills = await this._workSpaceIndicators.get_children().filter(e => 'width-multiplier' in e);
+        const pills = this._workSpaceIndicators.get_children().filter(e => 'width-multiplier' in e);
         this._applyVisibility(pills);
     }
 
     async _onPillsColorChange() {
-        let pills = await this._workSpaceIndicators.get_children().filter(e => 'width-multiplier' in e);
+        let pills = this._workSpaceIndicators.get_children().filter(e => 'width-multiplier' in e);
         this._applyColor(pills);
     }
 
     _connectSettings() {
         connectionSettingsArray = [];
 
-        this._pillsVisibilityId = this._settings.connect('changed::hide-pills', this._pillsVisibilityChange.bind(this)); // async
+        this._pillsVisibilityId = this._settings.connect('changed::hide-pills', this._pillsVisibilityChange.bind(this));
         connectionSettingsArray.push(this._pillsVisibilityId);
 
         this._showLogoId = this._settings.connect('changed::show-logo', this._showLogo.bind(this));
@@ -168,7 +153,7 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
         this._customTextId = this._settings.connect('changed::custom-text', this._setCustomLabel.bind(this));
         connectionSettingsArray.push(this._customTextId);
 
-        this._onPillsColorChangedId = this._settings.connect('changed::pills-color', this._onPillsColorChange.bind(this)); // async
+        this._onPillsColorChangedId = this._settings.connect('changed::pills-color', this._onPillsColorChange.bind(this));
         connectionSettingsArray.push(this._onPillsColorChangedId);
 
         this._onLogoChangedId = this._settings.connect('changed::logo-path', this._onLogoChange.bind(this));
@@ -201,66 +186,63 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
     _setLabel() {
         let shouldShowCustomText = this._settings.get_boolean('show-custom-text');
         if (!shouldShowCustomText) {
-            if (this._customLabel)
-                this._customLabel.hide();
+            this._customLabel?.hide();
             return;
         }
-
-        if (this._customLabel)
-            this._customLabel.show();
+        this._customLabel?.show();
     }
 
     _setCustomLabel() {
         this._setLabel();
 
         let customText = this._settings.get_string('custom-text');
+
         switch (customText) {
-        case '':
-            this._customLabel.text = `${GLib.get_os_info('PRETTY_NAME')} | ${config.PACKAGE_NAME.toUpperCase()} ${config.PACKAGE_VERSION}`;
-            break;
-        case 'username':
-            this._customLabel.text = GLib.get_user_name();
-            break;
-        case 'realname':
-            this._customLabel.text = GLib.get_real_name();
-            break;
-        case 'hostname':
-            this._customLabel.text = GLib.get_host_name();
-            break;
-        case 'osname':
-            this._customLabel.text = GLib.get_os_info('PRETTY_NAME');
-            break;
-        case 'kernel': {
-            const unit8array = GLib.spawn_command_line_sync('uname -r')[1];
-            const kernelVersion = new TextDecoder().decode(unit8array).trim();
-            const kernelText = `Kernel Version ${kernelVersion}`;
-            this._customLabel.text = kernelText;
-            break;
-        }
-        default:
-            this._customLabel.text = customText;
+            case '':
+                this._customLabel.text = `${GLib.get_os_info('PRETTY_NAME')} | ${config.PACKAGE_NAME.toUpperCase()} ${config.PACKAGE_VERSION}`;
+                break;
+            case 'username':
+                this._customLabel.text = GLib.get_user_name();
+                break;
+            case 'realname':
+                this._customLabel.text = GLib.get_real_name();
+                break;
+            case 'hostname':
+                this._customLabel.text = GLib.get_host_name();
+                break;
+            case 'osname':
+                this._customLabel.text = GLib.get_os_info('PRETTY_NAME');
+                break;
+            case 'kernel': {
+                const out = GLib.spawn_command_line_sync('uname -r')[1];
+                const kernelVersion = new TextDecoder().decode(out).trim();
+                this._customLabel.text = `Kernel Version ${kernelVersion}`;
+                break;
+            }
+            default:
+                this._customLabel.text = customText;
         }
     }
 
     _setCustomIndicator() {
         const shouldShowCustomIndicator = this._settings.get_boolean('show-custom-indicator');
         if (!shouldShowCustomIndicator) {
-            if (this._customIndicator)
-                this._customIndicator.hide();
+            this._customIndicator?.hide();
             return;
         }
 
         this._onWorkspaceChanged();
-
-        if (this._customIndicator)
-            this._customIndicator.show();
+        this._customIndicator?.show();
     }
 
     _onWorkspaceChanged() {
         const workspaceNames = this._workspaces_settings.get_strv('workspace-names');
         const index = global.workspaceManager.get_active_workspace().workspace_index;
         const nWorkspaces = global.workspaceManager.get_n_workspaces();
-        this._customIndicator.text = workspaceNames[index] ? `${workspaceNames[index]}` : `ws${index + 1} / ${nWorkspaces}`;
+
+        this._customIndicator.text = workspaceNames[index]
+            ? `${workspaceNames[index]}`
+            : `ws${index + 1} / ${nWorkspaces}`;
     }
 
     _onLogoChange() {
@@ -280,10 +262,8 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
 
     _destroyAllConnections() {
         connectionSettingsArray.forEach(id => {
-            if (id) {
+            if (id)
                 this._settings.disconnect(id);
-                id = null;
-            }
         });
 
         connectionSettingsArray = null;
@@ -293,14 +273,14 @@ export default class AddCustomTextToWorkSpaceIndicatorsExtension extends Extensi
             this._workspaceNamesChangedId = null;
         }
 
-        const workspaceManagerIds = [
+        const ids = [
             this._activeWsChangedId,
             this._wSNumberChangedId,
         ];
 
-        workspaceManagerIds.forEach(id => {
-            global.workspace_manager.disconnect(id);
-            id = null;
+        ids.forEach(id => {
+            if (id)
+                global.workspace_manager.disconnect(id);
         });
     }
 }
